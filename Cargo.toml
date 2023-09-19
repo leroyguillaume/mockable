@@ -10,7 +10,10 @@ keywords = ["mock", "mockable", "mocking", "test"]
 categories = ["development-tools::testing"]
 
 [features]
+clock = ["dep:chrono"]
+full = ["clock"]
 mock = ["dep:mockall"]
 
 [dependencies]
+chrono = { version = "0.4", optional = true }
 mockall = { version = "0.11", optional = true }
