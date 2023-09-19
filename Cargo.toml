@@ -1,0 +1,16 @@
+[package]
+name = "mockable"
+version = "0.1.0"
+authors = ["Guillaume Leroy <pro.guillaume.leroy@gmail.com>"]
+edition = "2021"
+description = "Usefull components to make easier to mock your code"
+documentation = "https://docs.rs/mockable"
+license-file = "LICENSE"
+keywords = ["mock", "mockable", "mocking", "test"]
+categories = ["development-tools::testing"]
+
+[features]
+mock = ["dep:mockall"]
+
+[dependencies]
+mockall = { version = "0.11", optional = true }
