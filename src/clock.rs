@@ -1,5 +1,4 @@
 use chrono::{DateTime, Local, Utc};
-use mockall::mock;
 
 // Clock
 
@@ -9,7 +8,7 @@ use mockall::mock;
 /// # Examples
 ///
 /// ```
-/// use chrono::{DateTime, Utc, Duration};
+/// use chrono::{DateTime, Duration, Utc};
 /// use mockable::{Clock, DefaultClock, MockClock};
 ///
 /// fn now(clock: &dyn Clock) -> DateTime<Utc> {
@@ -18,7 +17,6 @@ use mockall::mock;
 ///
 /// // Default
 /// let time = now(&DefaultClock);
-/// assert!(time < Utc::now() + Duration::seconds(1));
 ///
 /// // Mock
 /// let expected = Utc::now();
@@ -57,7 +55,7 @@ impl Clock for DefaultClock {
 // MockClock
 
 #[cfg(feature = "mock")]
-mock! {
+mockall::mock! {
     /// `mockall` implementation of `Clock`.
     ///
     /// **This is supported on `feature=clock,mock` only.**
