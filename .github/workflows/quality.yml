@@ -1,0 +1,78 @@
+name: Quality
+
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/quality.yml
+      - "**.rs"
+      - Cargo.toml
+  push:
+    branches: [main]
+    paths:
+      - "**.rs"
+      - Cargo.toml
+
+jobs:
+  quality:
+    name: Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - id: rust
+        name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy,rustfmt
+
+      - name: Restore cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('Cargo.toml') }}
+
+      - name: Build (debug)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all-features
+
+      - if: ${{ github.ref_name == 'main' }}
+        name: Build (release)
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --all-features --release
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Run fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --check
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Run clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-features --tests -- -D warnings
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
