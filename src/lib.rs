@@ -2,6 +2,8 @@
 
 #[cfg(feature = "clock")]
 pub use self::clock::{Clock, DefaultClock, MockClock};
+#[cfg(feature = "mock")]
+pub use self::mock::Mock;
 #[cfg(feature = "uuid")]
 pub use self::uuid::{DefaultUuidGenerator, MockUuidGenerator, UuidGenerator};
 
@@ -9,5 +11,7 @@ pub use self::uuid::{DefaultUuidGenerator, MockUuidGenerator, UuidGenerator};
 
 #[cfg(feature = "clock")]
 mod clock;
+#[cfg(feature = "mock")]
+mod mock;
 #[cfg(feature = "uuid")]
 mod uuid;
