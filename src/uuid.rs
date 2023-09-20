@@ -35,7 +35,7 @@ pub trait UuidGenerator: Send + Sync {
 
 // DefaultUuidGenerator
 
-/// Default implementation of `UuidGenerator`.
+/// Default implementation of [`UuidGenerator`](trait.UuidGenerator.html).
 ///
 /// **This is supported on `feature=uuid` only.**
 pub struct DefaultUuidGenerator;
@@ -50,7 +50,7 @@ impl UuidGenerator for DefaultUuidGenerator {
 
 #[cfg(feature = "mock")]
 mockall::mock! {
-    /// `mockall` implementation of `UuidGenerator`.
+    /// `mockall` implementation of [`UuidGenerator`](trait.UuidGenerator.html).
     ///
     /// **This is supported on `feature=uuid,mock` only.**
     pub UuidGenerator {}

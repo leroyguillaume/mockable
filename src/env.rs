@@ -321,7 +321,7 @@ pub trait Env: Send + Sync {
 
 // DefaultEnv
 
-/// Default implementation of `Env`.
+/// Default implementation of [`Env`](trait.Env.html).
 pub struct DefaultEnv(Box<dyn VarFnWrapper>);
 
 impl DefaultEnv {
@@ -455,7 +455,7 @@ impl Env for DefaultEnv {
 
 #[cfg(feature = "mock")]
 mockall::mock! {
-    /// `mockall` implementation of `Env`.
+    /// `mockall` implementation of [`Env`](trait.Env.html).
     ///
     /// **This is supported on `feature=mock` only.**
     pub Env {}
