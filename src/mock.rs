@@ -9,8 +9,6 @@ use std::sync::{
 ///
 /// # Examples
 /// ```
-/// use std::panic;
-///
 /// use mockable::Mock;
 /// use mockall::automock;
 ///
