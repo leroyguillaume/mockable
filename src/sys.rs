@@ -25,6 +25,9 @@ impl System for DefaultSystem {
 
 #[cfg(feature = "mock")]
 mockall::mock! {
+    /// `mockall` implementation of [`System`](trait.System.html).
+    ///
+    /// **This is supported on `feature=mock` only.**
     pub System {}
 
     impl System for System {

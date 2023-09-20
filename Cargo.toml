@@ -12,16 +12,21 @@ categories = ["development-tools::testing"]
 [features]
 browser = ["dep:open"]
 clock = ["dep:chrono"]
-full = ["browser", "clock", "uuid"]
+full = ["browser", "clock", "http-client", "uuid"]
+http-client = ["dep:async-trait", "dep:bytes", "dep:reqwest"]
 mock = ["dep:mockall"]
 uuid = ["dep:uuid"]
 
 [dependencies]
+async-trait = { version = "0.1", optional = true }
+bytes = { version = "1.5", optional = true }
 chrono = { version = "0.4", optional = true }
 mockall = { version = "0.11", optional = true }
 open = { version = "5.0", optional = true }
+reqwest = { version = "0.11", optional = true }
 tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"], optional = true }
 
 [dev-dependencies]
 mockall = "0.11"
+tokio-test = "0.4"
