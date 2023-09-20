@@ -103,7 +103,7 @@ impl From<Output> for CommandOutput {
 /// });
 /// ```
 #[async_trait]
-pub trait CommandRunner {
+pub trait CommandRunner: Send + Sync {
     /// Runs the given command.
     async fn run(&self, cmd: Command) -> Result<CommandOutput>;
 }
