@@ -14,6 +14,7 @@ pub use self::uuid::{DefaultUuidGenerator, UuidGenerator};
 pub use self::{
     env::MockEnv,
     fs::{MockDirEntry, MockFileSystem, MockMetadata, MockPermissions},
+    sys::MockSystem,
 };
 pub use self::{
     env::{DefaultEnv, Env, EnvParseError, EnvParseResult},
@@ -21,6 +22,7 @@ pub use self::{
         DefaultDirEntry, DefaultFileSystem, DefaultMetadata, DefaultPermissions, DefaultReadDir,
         DirEntry, FileSystem, Metadata, Permissions, ReadDir, VecReadDir,
     },
+    sys::{DefaultSystem, System},
 };
 
 // Mods
@@ -31,5 +33,6 @@ mod env;
 mod fs;
 #[cfg(any(feature = "mock", test))]
 mod mock;
+mod sys;
 #[cfg(feature = "uuid")]
 mod uuid;
