@@ -77,7 +77,7 @@ pub trait HttpClient: Send + Sync {
 ///
 /// **This is supported on `feature=http-client` only.**
 #[async_trait]
-pub trait HttpResponse {
+pub trait HttpResponse: Send + Sync {
     /// Get the response body.
     async fn body(self: Box<Self>) -> Result<Bytes>;
 
