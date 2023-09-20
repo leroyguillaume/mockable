@@ -67,33 +67,33 @@ jobs:
       - name: Build (debug)
         uses: actions-rs/cargo@v1
         with:
-          command: build
           args: --all-features
+          command: build
 
       - if: ${{ github.ref_name == 'main' }}
         name: Build (release)
         uses: actions-rs/cargo@v1
         with:
-          command: build
           args: --all-features --release
+          command: build
 
       - if: ${{ github.event_name == 'pull_request' }}
         name: Run fmt
         uses: actions-rs/cargo@v1
         with:
-          command: fmt
           args: --check
+          command: fmt
 
       - if: ${{ github.event_name == 'pull_request' }}
         name: Run clippy
         uses: actions-rs/cargo@v1
         with:
-          command: clippy
           args: --all-features --tests -- -D warnings
+          command: clippy
 
       - if: ${{ github.event_name == 'pull_request' }}
         name: Test
         uses: actions-rs/cargo@v1
         with:
-          command: test
           args: --all-features
+          command: test

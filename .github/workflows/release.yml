@@ -43,4 +43,5 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         with:
-          command: publish --all-features
+          args: --all-features
+          command: publish
