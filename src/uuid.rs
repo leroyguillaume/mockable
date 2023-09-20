@@ -55,7 +55,7 @@ mockall::mock! {
     /// **This is supported on `feature=uuid,mock` only.**
     pub UuidGenerator {}
 
-    impl super::UuidGenerator for UuidGenerator {
+    impl UuidGenerator for UuidGenerator {
         fn generate_v4(&self) -> Uuid;
     }
 }
