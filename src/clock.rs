@@ -61,7 +61,7 @@ mockall::mock! {
     /// **This is supported on `feature=clock,mock` only.**
     pub Clock {}
 
-    impl super::Clock for Clock {
+    impl Clock for Clock {
         fn local(&self) -> DateTime<Local>;
         fn utc(&self) -> DateTime<Utc>;
     }

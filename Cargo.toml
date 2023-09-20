@@ -18,4 +18,8 @@ uuid = ["dep:uuid"]
 [dependencies]
 chrono = { version = "0.4", optional = true }
 mockall = { version = "0.11", optional = true }
+tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"], optional = true }
+
+[dev-dependencies]
+mockall = "0.11"
