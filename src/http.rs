@@ -101,13 +101,7 @@ pub struct DefaultHttpClient;
 #[async_trait]
 impl HttpClient for DefaultHttpClient {
     async fn send(&self, req: HttpRequest) -> Result<Box<dyn HttpResponse>> {
-        trace!(
-            ?req.headers,
-            %req.method,
-            ?req.query,
-            req.url,
-            "sending HTTP request"
-        );
+        trace!(?req, "sending HTTP request");
         let resp = Client::new()
             .request(req.method, &req.url)
             .headers(req.headers)
