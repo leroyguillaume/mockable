@@ -37,7 +37,7 @@ pub trait Clock: Send + Sync {
 
 // DefaultClock
 
-/// Default implementation of `Clock`.
+/// Default implementation of [`Clock`](trait.Clock.html).
 ///
 /// **This is supported on `feature=clock` only.**
 pub struct DefaultClock;
@@ -56,7 +56,7 @@ impl Clock for DefaultClock {
 
 #[cfg(feature = "mock")]
 mockall::mock! {
-    /// `mockall` implementation of `Clock`.
+    /// `mockall` implementation of [`Clock`](trait.Clock.html).
     ///
     /// **This is supported on `feature=clock,mock` only.**
     pub Clock {}
