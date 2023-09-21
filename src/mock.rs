@@ -119,6 +119,12 @@ impl<E> Clone for Mock<E> {
     }
 }
 
+impl<E> Default for Mock<E> {
+    fn default() -> Self {
+        Self::never()
+    }
+}
+
 // MockKind
 
 enum MockKind<E> {
