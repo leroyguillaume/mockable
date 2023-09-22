@@ -26,6 +26,73 @@ pub struct Command {
     pub uid: Option<u32>,
 }
 
+impl Command {
+    /// Creates a new command.
+    pub fn new(program: String) -> Self {
+        Self {
+            args: vec![],
+            cwd: None,
+            env: None,
+            #[cfg(unix)]
+            gid: None,
+            program,
+            #[cfg(unix)]
+            uid: None,
+        }
+    }
+
+    /// Add argument.
+    pub fn with_arg(mut self, arg: String) -> Self {
+        self.args.push(arg);
+        self
+    }
+
+    /// Set arguments.
+    pub fn with_args(mut self, args: Vec<String>) -> Self {
+        self.args = args;
+        self
+    }
+
+    /// Set current working directory.
+    pub fn with_cwd(mut self, cwd: PathBuf) -> Self {
+        self.cwd = Some(cwd);
+        self
+    }
+
+    /// Set environment variable.
+    pub fn with_env(mut self, key: String, val: String) -> Self {
+        match self.env {
+            Some(ref mut env) => {
+                env.insert(key, val);
+            }
+            None => {
+                self.env = Some(HashMap::from_iter([(key, val)]));
+            }
+        }
+        self
+    }
+
+    /// Set all environment variables.
+    pub fn with_envs(mut self, env: HashMap<String, String>) -> Self {
+        self.env = Some(env);
+        self
+    }
+
+    /// Set GID.
+    #[cfg(unix)]
+    pub fn with_gid(mut self, gid: u32) -> Self {
+        self.gid = Some(gid);
+        self
+    }
+
+    /// Set UID.
+    #[cfg(unix)]
+    pub fn with_uid(mut self, uid: u32) -> Self {
+        self.uid = Some(uid);
+        self
+    }
+}
+
 // CommandOutput
 
 /// The output of a command.
