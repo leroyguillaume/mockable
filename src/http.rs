@@ -2,7 +2,10 @@ use std::collections::HashMap;
 
 use async_trait::async_trait;
 use bytes::Bytes;
-use reqwest::{header::HeaderMap, Client, Method, Response, Result, StatusCode};
+use reqwest::{
+    header::{HeaderMap, HeaderName, HeaderValue},
+    Client, Method, Response, Result, StatusCode,
+};
 use tracing::trace;
 
 // HttpRequest
@@ -18,6 +21,67 @@ pub struct HttpRequest {
     pub query: HashMap<String, String>,
     /// The URL to send the request to.
     pub url: String,
+}
+
+impl HttpRequest {
+    /// Create a new DELETE HTTP request.
+    pub fn delete(url: String) -> Self {
+        Self::new(Method::DELETE, url)
+    }
+
+    /// Create a new GET HTTP request.
+    pub fn get(url: String) -> Self {
+        Self::new(Method::GET, url)
+    }
+
+    /// Create a new PATCH HTTP request.
+    pub fn patch(url: String) -> Self {
+        Self::new(Method::PATCH, url)
+    }
+
+    /// Create a new POST HTTP request.
+    pub fn post(url: String) -> Self {
+        Self::new(Method::POST, url)
+    }
+
+    /// Create a new PUT HTTP request.
+    pub fn put(url: String) -> Self {
+        Self::new(Method::PUT, url)
+    }
+
+    /// Create a new HTTP request.
+    pub fn new(method: Method, url: String) -> Self {
+        Self {
+            headers: Default::default(),
+            method,
+            query: Default::default(),
+            url,
+        }
+    }
+
+    /// Set header.
+    pub fn with_header(mut self, name: HeaderName, val: HeaderValue) -> Self {
+        self.headers.insert(name, val);
+        self
+    }
+
+    /// Set all headers.
+    pub fn with_headers(mut self, headers: HeaderMap) -> Self {
+        self.headers = headers;
+        self
+    }
+
+    /// Set query parameter.
+    pub fn with_param(mut self, name: String, value: String) -> Self {
+        self.query.insert(name, value);
+        self
+    }
+
+    /// Set all query parameters.
+    pub fn with_query(mut self, query: HashMap<String, String>) -> Self {
+        self.query = query;
+        self
+    }
 }
 
 // HttpClient

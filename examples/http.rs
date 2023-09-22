@@ -1,5 +1,4 @@
 use mockable::{DefaultHttpClient, HttpClient, HttpRequest};
-use reqwest::Method;
 
 struct GoogleClient(Box<dyn HttpClient>);
 
@@ -9,12 +8,7 @@ impl GoogleClient {
     }
 
     async fn get(&self) -> String {
-        let req = HttpRequest {
-            headers: Default::default(),
-            method: Method::GET,
-            query: Default::default(),
-            url: "https://google.com".into(),
-        };
+        let req = HttpRequest::get("https://google.com".into());
         let resp = self.0.send(req).await.expect("request failed");
         let body = resp.body().await.expect("reading body failed");
         String::from_utf8(body.to_vec()).expect("body is not utf8")
@@ -38,12 +32,7 @@ mod test {
     #[tokio::test]
     async fn test() {
         let expected = "<html></html>";
-        let req = HttpRequest {
-            headers: Default::default(),
-            method: Method::GET,
-            query: Default::default(),
-            url: "https://google.com".into(),
-        };
+        let req = HttpRequest::get("https://google.com".into());
         let mut client = MockHttpClient::new();
         client.expect_send().with(eq(req)).returning(|_| {
             let mut resp = MockHttpResponse::new();
