@@ -55,7 +55,6 @@ use std::sync::{
 /// assert_eq!(mymock.foo(), "bar");
 /// assert_eq!(mock.count(), 1);
 /// ```
-#[derive(Clone)]
 pub struct Mock<E> {
     idx: Arc<AtomicUsize>,
     kind: MockKind<E>,
@@ -108,6 +107,15 @@ impl<E> Mock<E> {
     /// Returns the number of times the mock has been called.
     pub fn count(&self) -> usize {
         self.idx.load(Ordering::Relaxed)
+    }
+}
+
+impl<E> Clone for Mock<E> {
+    fn clone(&self) -> Self {
+        Self {
+            idx: self.idx.clone(),
+            kind: self.kind.clone(),
+        }
     }
 }
 
