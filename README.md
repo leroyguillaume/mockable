@@ -58,53 +58,7 @@ The [`HttpClient`](https://docs.rs/mockable/latest/mockable/trait.HttpClient.htm
 
 The [`Mock`](https://docs.rs/mockable/latest/mockable/struct.Mock.html) trait provides a way to mock a function.
 
-```rust
-use mockable::Mock;
-use mockall::automock;
-
-// Never
-let mock: Mock<()> = Mock::never();
-// fist call will panic
-
-// Once
-let mock = Mock::once(|| 42);
-assert_eq!(mock.call(), 42);
-
-// Several
-let mock = Mock::with(vec![
-    Box::new(|| 1),
-    Box::new(|| 2),
-    Box::new(|| 3)]
-);
-assert_eq!(mock.call(), 1);
-assert_eq!(mock.call(), 2);
-assert_eq!(mock.call(), 3);
-// next call will panic
-
-// Always
-let mock = Mock::always(|idx| idx);
-assert_eq!(mock.call(), 0);
-assert_eq!(mock.call(), 1);
-assert_eq!(mock.call(), 2);
-// next call will never panic
-
-// with mockall
-#[automock]
-trait MyTrait {
-    fn foo(&self) -> &'static str;
-}
-
-let mock = Mock::once(move || "bar");
-let mut mymock = MockMyTrait::new();
-mymock
-    .expect_foo()
-    .returning({
-        let mock = mock.clone();
-        move || mock.call()
-    });
-assert_eq!(mymock.foo(), "bar");
-assert_eq!(mock.count(), 1);
-```
+[Example](examples/mock.rs).
 
 ## System
 
