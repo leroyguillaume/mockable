@@ -24,26 +24,7 @@ The [`Clock`](https://docs.rs/mockable/latest/mockable/trait.Clock.html) trait p
 
 **Note:** This trait is only available when the `clock` feature is enabled.
 
-```rust
-use chrono::{DateTime, Duration, Utc};
-use mockable::{Clock, DefaultClock, MockClock};
-
-fn now(clock: &dyn Clock) -> DateTime<Utc> {
-   clock.utc()
-}
-
-// Default
-let time = now(&DefaultClock);
-
-// Mock
-let expected = Utc::now();
-let mut clock = MockClock::new();
-clock
-    .expect_utc()
-    .returning(move || expected);
-let time = now(&clock);
-assert_eq!(time, expected);
-```
+[Example](examples/clock.rs).
 
 ## Command Runner
 
@@ -51,111 +32,19 @@ The [`CommandRunner`](https://docs.rs/mockable/latest/mockable/trait.CommandRunn
 
 **Note:** This trait is only available when the `cmd` feature is enabled.
 
-```rust
-use std::io::Result;
-
-use mockall::predicate::eq;
-use mockable::{Command, CommandOutput, CommandRunner, DefaultCommandRunner, MockCommandRunner};
-
-async fn run(cmd: Command, runner: &dyn CommandRunner) -> Result<CommandOutput> {
-    runner.run(cmd).await
-}
-
-tokio_test::block_on(async {
-    let cmd = Command {
-        args: vec!["-n".to_string(), "Hello world!".to_string()],
-        cwd: None,
-        env: None,
-        gid: None,
-        program: "echo".to_string(),
-        uid: None,
-    };
-
-    // Default
-    let runner = DefaultCommandRunner;
-    let outputs = run(cmd.clone(), &runner).await.unwrap();
-    assert_eq!(outputs.code, Some(0));
-    assert_eq!(outputs.stdout, "Hello world!".as_bytes().to_vec());
-
-    // Mock
-    let expected = CommandOutput {
-        code: Some(0),
-        stderr: vec![],
-        stdout: "Hello world!".as_bytes().to_vec(),
-    };
-    let mut runner = MockCommandRunner::new();
-    runner
-        .expect_run()
-        .with(eq(cmd.clone()))
-        .returning({
-            let expected = expected.clone();
-            move |_| Ok(expected.clone())
-        });
-    let output = run(cmd, &runner).await.unwrap();
-    assert_eq!(output, expected);
-});
-```
+[Example](examples/cmd.rs).
 
 ## Env
 
 The [`Env`](https://docs.rs/mockable/latest/mockable/trait.Env.html) trait provides a way to mock the environment variables.
 
-```rust
-use mockable::{DefaultEnv, Env, EnvParseResult, MockEnv};
-
-fn get(env: &dyn Env) -> Option<EnvParseResult<u32>> {
-    env.u32("KEY")
-}
-
-std::env::set_var("KEY", "42");
-
-// Default
-let env = DefaultEnv::new();
-let val = get(&env).unwrap().unwrap();
-assert_eq!(val, 42);
-
-// Mock
-let mut env = MockEnv::new();
-env
-    .expect_u32()
-    .returning(|_| Some(Ok(24)));
-let val = get(&env).unwrap().unwrap();
-assert_eq!(val, 24);
-```
+[Example](examples/env.rs).
 
 ## File System
 
 The [`FileSystem`](https://docs.rs/mockable/latest/mockable/trait.FileSystem.html) trait provides a way to mock the file system operations.
 
-```rust
-use std::{io::Result, path::Path};
-
-use mockall::predicate::eq;
-use mockable::{DefaultFileSystem, FileSystem, Metadata, MockFileSystem, MockMetadata};
-
-fn get_metadata(path: &Path, fs: &dyn FileSystem) -> Result<Box<dyn Metadata>> {
-    fs.metadata(path)
-}
-
-// Default
-let metadata = get_metadata(Path::new("/"), &DefaultFileSystem).unwrap();
-assert!(metadata.is_dir());
-
-// Mock
-let mut fs = MockFileSystem::new();
-fs
-    .expect_metadata()
-    .with(eq(Path::new("/")))
-    .returning(|_| {
-        let mut metadata = MockMetadata::new();
-        metadata
-            .expect_is_dir()
-            .returning(|| true);
-        Ok(Box::new(metadata))
-    });
-let metadata = get_metadata(Path::new("/"), &fs).unwrap();
-assert!(metadata.is_dir());
-```
+[Example](examples/fs.rs).
 
 ## HTTP Client
 
@@ -163,44 +52,7 @@ The [`HttpClient`](https://docs.rs/mockable/latest/mockable/trait.HttpClient.htm
 
 **Note:** This trait is only available when the `http` feature is enabled.
 
-```rust
-use mockall::predicate::eq;
-use mockable::{DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, MockHttpClient, MockHttpResponse};
-use reqwest::{Method, Result, StatusCode};
-
-async fn send(req: HttpRequest, client: &dyn HttpClient) -> Result<Box<dyn HttpResponse>> {
-    client.send(req).await
-}
-
-tokio_test::block_on(async {
-    let req = HttpRequest {
-        headers: Default::default(),
-        method: Method::GET,
-        query: Default::default(),
-        url: "https://google.com".to_string(),
-    };
-
-    // Default
-    let client = DefaultHttpClient;
-    let resp = send(req.clone(), &client).await.unwrap();
-    assert!(resp.status().is_success());
-
-    // Mock
-    let mut client = MockHttpClient::new();
-    client
-        .expect_send()
-        .with(eq(req.clone()))
-        .returning(|_| {
-            let mut resp = MockHttpResponse::new();
-            resp
-                .expect_status()
-                .returning(|| StatusCode::OK);
-            Ok(Box::new(resp))
-        });
-    let resp = send(req, &client).await.unwrap();
-    assert!(resp.status().is_success());
-});
-```
+[Example](examples/http.rs).
 
 ## Mock
 
@@ -258,29 +110,12 @@ assert_eq!(mock.count(), 1);
 
 The [`System`](https://docs.rs/mockable/latest/mockable/trait.System.html) trait provides a way to mock the system.
 
+[Example](examples/sys.rs).
+
 ## UUID Generator
 
 The [`UuidGenerator`](https://docs.rs/mockable/latest/mockable/trait.UuidGenerator.html) trait provides a way to mock the UUID generator.
 
 **Note:** This trait is only available when the `uuid` feature is enabled.
 
-```rust
-use mockable::{DefaultUuidGenerator, MockUuidGenerator, UuidGenerator};
-use uuid::Uuid;
-
-fn generate(generator: &dyn UuidGenerator) -> Uuid {
-   generator.generate_v4()
-}
-
-// Default
-let uuid = generate(&DefaultUuidGenerator);
-
-// Mock
-let expected = Uuid::new_v4();
-let mut generator = MockUuidGenerator::new();
-generator
-    .expect_generate_v4()
-    .returning(move || expected);
-let uuid = generate(&generator);
-assert_eq!(uuid, expected);
-```
+[Example](examples/uuid.rs).
