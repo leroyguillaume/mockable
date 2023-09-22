@@ -57,51 +57,7 @@ impl From<Output> for CommandOutput {
 ///
 /// **This is supported on `feature=cmd` only.**
 ///
-/// # Examples
-/// ```
-/// use std::io::Result;
-///
-/// use mockall::predicate::eq;
-/// use mockable::{Command, CommandOutput, CommandRunner, DefaultCommandRunner, MockCommandRunner};
-///
-/// async fn run(cmd: Command, runner: &dyn CommandRunner) -> Result<CommandOutput> {
-///     runner.run(cmd).await
-/// }
-///
-/// tokio_test::block_on(async {
-///     let cmd = Command {
-///         args: vec!["-n".to_string(), "Hello world!".to_string()],
-///         cwd: None,
-///         env: None,
-///         gid: None,
-///         program: "echo".to_string(),
-///         uid: None,
-///     };
-///
-///     // Default
-///     let runner = DefaultCommandRunner;
-///     let outputs = run(cmd.clone(), &runner).await.unwrap();
-///     assert_eq!(outputs.code, Some(0));
-///     assert_eq!(outputs.stdout, "Hello world!".as_bytes().to_vec());
-///
-///     // Mock
-///     let expected = CommandOutput {
-///         code: Some(0),
-///         stderr: vec![],
-///         stdout: "Hello world!".as_bytes().to_vec(),
-///     };
-///     let mut runner = MockCommandRunner::new();
-///     runner
-///         .expect_run()
-///         .with(eq(cmd.clone()))
-///         .returning({
-///             let expected = expected.clone();
-///             move |_| Ok(expected.clone())
-///         });
-///     let output = run(cmd, &runner).await.unwrap();
-///     assert_eq!(output, expected);
-/// });
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/cmd.rs).
 #[async_trait]
 pub trait CommandRunner: Send + Sync {
     /// Runs the given command.
@@ -113,6 +69,8 @@ pub trait CommandRunner: Send + Sync {
 /// Default implementation of [`CommandRunner`](trait.CommandRunner.html).
 ///
 /// **This is supported on `feature=cmd` only.**
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/cmd.rs).
 pub struct DefaultCommandRunner;
 
 #[async_trait]
@@ -147,6 +105,8 @@ mockall::mock! {
     /// `mockall` implementation of [`CommandRunner`](trait.CommandRunner.html).
     ///
     /// **This is supported on `feature=cmd,mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/cmd.rs).
     pub CommandRunner {}
 
     #[async_trait]

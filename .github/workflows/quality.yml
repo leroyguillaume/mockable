@@ -97,3 +97,10 @@ jobs:
         with:
           args: --all-features
           command: test
+
+      - if: ${{ github.event_name == 'pull_request' }}
+        name: Test examples
+        uses: actions-rs/cargo@v1
+        with:
+          args: --all-features --examples
+          command: test
