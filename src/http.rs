@@ -13,6 +13,8 @@ use tracing::trace;
 /// A HTTP request.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct HttpRequest {
+    /// The request body.
+    pub body: Vec<u8>,
     /// The headers to send with the request.
     pub headers: HeaderMap,
     /// The HTTP method to use.
@@ -52,11 +54,18 @@ impl HttpRequest {
     /// Create a new HTTP request.
     pub fn new(method: Method, url: String) -> Self {
         Self {
+            body: vec![],
             headers: Default::default(),
             method,
             query: Default::default(),
             url,
         }
+    }
+
+    /// Set body.
+    pub fn with_body(mut self, body: Vec<u8>) -> Self {
+        self.body = body;
+        self
     }
 
     /// Set header.
@@ -134,6 +143,7 @@ impl HttpClient for DefaultHttpClient {
             .request(req.method, &req.url)
             .headers(req.headers)
             .query(&req.query)
+            .body(req.body)
             .send()
             .await?;
         Ok(Box::new(DefaultHttpResponse(resp)))
