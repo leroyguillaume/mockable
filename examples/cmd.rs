@@ -8,14 +8,7 @@ impl EchoRunner {
     }
 
     async fn echo(&self, message: &str) -> String {
-        let cmd = Command {
-            args: vec![message.into()],
-            cwd: None,
-            env: None,
-            gid: None,
-            program: "echo".into(),
-            uid: None,
-        };
+        let cmd = Command::new("echo".into()).with_arg(message.into());
         let output = self.0.run(cmd).await.expect("echo failed");
         String::from_utf8(output.stdout).expect("echo output is not utf8")
     }
@@ -38,14 +31,7 @@ mod test {
     #[tokio::test]
     async fn test() {
         let expected = "Hello, world!";
-        let cmd = Command {
-            args: vec![expected.into()],
-            cwd: None,
-            env: None,
-            gid: None,
-            program: "echo".into(),
-            uid: None,
-        };
+        let cmd = Command::new("echo".into()).with_arg(expected.into());
         let mut runner = MockCommandRunner::new();
         runner.expect_run().with(eq(cmd)).returning(|_| {
             Ok(CommandOutput {
