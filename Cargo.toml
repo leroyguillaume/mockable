@@ -1,6 +1,6 @@
 [package]
 name = "mockable"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["Guillaume Leroy <pro.guillaume.leroy@gmail.com>"]
 edition = "2021"
 description = "Usefull components to make easier to mock your code"
