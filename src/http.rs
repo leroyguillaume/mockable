@@ -26,45 +26,7 @@ pub struct HttpRequest {
 ///
 /// **This is supported on `feature=http-client` only.**
 ///
-/// # Examples
-/// ```
-/// use mockall::predicate::eq;
-/// use mockable::{DefaultHttpClient, HttpClient, HttpRequest, HttpResponse, MockHttpClient, MockHttpResponse};
-/// use reqwest::{Method, Result, StatusCode};
-///
-/// async fn send(req: HttpRequest, client: &dyn HttpClient) -> Result<Box<dyn HttpResponse>> {
-///     client.send(req).await
-/// }
-///
-/// tokio_test::block_on(async {
-///     let req = HttpRequest {
-///         headers: Default::default(),
-///         method: Method::GET,
-///         query: Default::default(),
-///         url: "https://google.com".to_string(),
-///     };
-///
-///     // Default
-///     let client = DefaultHttpClient;
-///     let resp = send(req.clone(), &client).await.unwrap();
-///     assert!(resp.status().is_success());
-///
-///     // Mock
-///     let mut client = MockHttpClient::new();
-///     client
-///         .expect_send()
-///         .with(eq(req.clone()))
-///         .returning(|_| {
-///             let mut resp = MockHttpResponse::new();
-///             resp
-///                 .expect_status()
-///                 .returning(|| StatusCode::OK);
-///             Ok(Box::new(resp))
-///         });
-///     let resp = send(req, &client).await.unwrap();
-///     assert!(resp.status().is_success());
-/// });
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/http.rs).
 #[async_trait]
 pub trait HttpClient: Send + Sync {
     /// Send a HTTP request.
@@ -96,6 +58,8 @@ pub trait HttpResponse: Send + Sync {
 /// Default implementation of [`HttpClient`](trait.HttpClient.html).
 ///
 /// **This is supported on `feature=http-client` only.**
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/http.rs).
 pub struct DefaultHttpClient;
 
 #[async_trait]
@@ -152,6 +116,8 @@ mockall::mock! {
     /// `mockall` implementation of [`HttpClient`](trait.HttpClient.html).
     ///
     /// **This is supported on `feature=http-client,mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/http.rs).
     pub HttpClient {}
 
     #[async_trait]

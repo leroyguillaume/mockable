@@ -60,30 +60,7 @@ impl From<Box<dyn Error + Send + Sync>> for EnvParseError {
 
 /// A trait for getting environment variables.
 ///
-/// # Examples
-///
-/// ```
-/// use mockable::{DefaultEnv, Env, EnvParseResult, MockEnv};
-///
-/// fn get(env: &dyn Env) -> Option<EnvParseResult<u32>> {
-///     env.u32("KEY")
-/// }
-///
-/// std::env::set_var("KEY", "42");
-///
-/// // Default
-/// let env = DefaultEnv::new();
-/// let val = get(&env).unwrap().unwrap();
-/// assert_eq!(val, 42);
-///
-/// // Mock
-/// let mut env = MockEnv::new();
-/// env
-///     .expect_u32()
-///     .returning(|_| Some(Ok(24)));
-/// let val = get(&env).unwrap().unwrap();
-/// assert_eq!(val, 24);
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/env.rs).
 pub trait Env: Send + Sync {
     /// Returns the value of the environment variable `key` as a `bool`.
     ///
@@ -322,6 +299,8 @@ pub trait Env: Send + Sync {
 // DefaultEnv
 
 /// Default implementation of [`Env`](trait.Env.html).
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/env.rs).
 pub struct DefaultEnv(Box<dyn VarFnWrapper>);
 
 impl DefaultEnv {
@@ -458,6 +437,8 @@ mockall::mock! {
     /// `mockall` implementation of [`Env`](trait.Env.html).
     ///
     /// **This is supported on `feature=mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/env.rs).
     pub Env {}
 
     impl Env for Env {
