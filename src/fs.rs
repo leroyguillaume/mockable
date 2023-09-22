@@ -422,19 +422,21 @@ impl ReadDir for DefaultReadDir {}
 pub struct VecReadDir(Vec<Result<Box<dyn DirEntry>>>);
 
 impl From<Vec<Result<Box<dyn DirEntry>>>> for VecReadDir {
-    fn from(entries: Vec<Result<Box<dyn DirEntry>>>) -> Self {
+    fn from(mut entries: Vec<Result<Box<dyn DirEntry>>>) -> Self {
+        entries.reverse();
         Self(entries)
     }
 }
 
-impl IntoIterator for VecReadDir {
+impl Iterator for VecReadDir {
     type Item = Result<Box<dyn DirEntry>>;
-    type IntoIter = std::vec::IntoIter<Self::Item>;
 
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.pop()
     }
 }
+
+impl ReadDir for VecReadDir {}
 
 // MockDirEntry
 
