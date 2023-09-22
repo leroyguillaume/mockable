@@ -6,28 +6,7 @@ use uuid::Uuid;
 ///
 /// **This is supported on `feature=uuid` only.**
 ///
-/// # Examples
-///
-/// ```
-/// use mockable::{DefaultUuidGenerator, MockUuidGenerator, UuidGenerator};
-/// use uuid::Uuid;
-///
-/// fn generate(generator: &dyn UuidGenerator) -> Uuid {
-///    generator.generate_v4()
-/// }
-///
-/// // Default
-/// let uuid = generate(&DefaultUuidGenerator);
-///
-/// // Mock
-/// let expected = Uuid::new_v4();
-/// let mut generator = MockUuidGenerator::new();
-/// generator
-///     .expect_generate_v4()
-///     .returning(move || expected);
-/// let uuid = generate(&generator);
-/// assert_eq!(uuid, expected);
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/uuid.rs).
 pub trait UuidGenerator: Send + Sync {
     /// Generates a new UUID V4.
     fn generate_v4(&self) -> Uuid;
@@ -38,6 +17,8 @@ pub trait UuidGenerator: Send + Sync {
 /// Default implementation of [`UuidGenerator`](trait.UuidGenerator.html).
 ///
 /// **This is supported on `feature=uuid` only.**
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/uuid.rs).
 pub struct DefaultUuidGenerator;
 
 impl UuidGenerator for DefaultUuidGenerator {
@@ -53,6 +34,8 @@ mockall::mock! {
     /// `mockall` implementation of [`UuidGenerator`](trait.UuidGenerator.html).
     ///
     /// **This is supported on `feature=uuid,mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/uuid.rs).
     pub UuidGenerator {}
 
     impl UuidGenerator for UuidGenerator {

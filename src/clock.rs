@@ -5,28 +5,8 @@ use chrono::{DateTime, Local, Utc};
 /// A trait for getting the current time.
 ///
 /// **This is supported on `feature=clock` only.**
-/// # Examples
 ///
-/// ```
-/// use chrono::{DateTime, Duration, Utc};
-/// use mockable::{Clock, DefaultClock, MockClock};
-///
-/// fn now(clock: &dyn Clock) -> DateTime<Utc> {
-///    clock.utc()
-/// }
-///
-/// // Default
-/// let time = now(&DefaultClock);
-///
-/// // Mock
-/// let expected = Utc::now();
-/// let mut clock = MockClock::new();
-/// clock
-///     .expect_utc()
-///     .returning(move || expected);
-/// let time = now(&clock);
-/// assert_eq!(time, expected);
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/clock.rs).
 pub trait Clock: Send + Sync {
     /// Returns the current time in the local timezone.
     fn local(&self) -> DateTime<Local>;
@@ -40,6 +20,8 @@ pub trait Clock: Send + Sync {
 /// Default implementation of [`Clock`](trait.Clock.html).
 ///
 /// **This is supported on `feature=clock` only.**
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/clock.rs).
 pub struct DefaultClock;
 
 impl Clock for DefaultClock {
@@ -59,6 +41,8 @@ mockall::mock! {
     /// `mockall` implementation of [`Clock`](trait.Clock.html).
     ///
     /// **This is supported on `feature=clock,mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/clock.rs).
     pub Clock {}
 
     impl Clock for Clock {

@@ -28,37 +28,7 @@ pub trait DirEntry: Send + Sync {
 
 /// A trait for file system operations.
 ///
-/// # Examples
-///
-/// ```
-/// use std::{io::Result, path::Path};
-///
-/// use mockall::predicate::eq;
-/// use mockable::{DefaultFileSystem, FileSystem, Metadata, MockFileSystem, MockMetadata};
-///
-/// fn get_metadata(path: &Path, fs: &dyn FileSystem) -> Result<Box<dyn Metadata>> {
-///     fs.metadata(path)
-/// }
-///
-/// // Default
-/// let metadata = get_metadata(Path::new("/"), &DefaultFileSystem).unwrap();
-/// assert!(metadata.is_dir());
-///
-/// // Mock
-/// let mut fs = MockFileSystem::new();
-/// fs
-///     .expect_metadata()
-///     .with(eq(Path::new("/")))
-///     .returning(|_| {
-///         let mut metadata = MockMetadata::new();
-///         metadata
-///             .expect_is_dir()
-///             .returning(|| true);
-///         Ok(Box::new(metadata))
-///     });
-/// let metadata = get_metadata(Path::new("/"), &fs).unwrap();
-/// assert!(metadata.is_dir());
-/// ```
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/fs.rs).
 pub trait FileSystem: Send + Sync {
     /// See [`std::fs::copy`](https://doc.rust-lang.org/stable/std/fs/fn.copy.html) for more details.
     fn copy(&self, from: &Path, to: &Path) -> Result<u64>;
@@ -212,6 +182,8 @@ impl DirEntry for DefaultDirEntry {
 // DefaultFileSystem
 
 /// Default implementation of [`FileSystem`](trait.FileSystem.html).
+///
+/// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/fs.rs).
 pub struct DefaultFileSystem;
 
 impl FileSystem for DefaultFileSystem {
@@ -465,6 +437,8 @@ mockall::mock! {
     /// `mockall` implementation of [`FileSystem`](trait.FileSystem.html).
     ///
     /// **This is supported on `feature=mock` only.**
+    ///
+    /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/fs.rs).
     pub FileSystem {}
 
     impl FileSystem for FileSystem {
