@@ -22,6 +22,9 @@ pub trait DirEntry: Send + Sync {
 
     /// See [`std::fs::DirEntry::path`](https://doc.rust-lang.org/stable/std/fs/struct.DirEntry.html#method.path) for more details.
     fn path(&self) -> PathBuf;
+
+    /// Returns a reference to the underlying [`std::fs::DirEntry`](https://doc.rust-lang.org/stable/std/fs/struct.DirEntry.html) instance.
+    fn to_dir_entry(&self) -> &std::fs::DirEntry;
 }
 
 // FileSystem
@@ -116,6 +119,9 @@ pub trait Metadata: Send + Sync {
 
     /// See [`std::fs::Metadata::permissions`](https://doc.rust-lang.org/stable/std/fs/struct.Metadata.html#method.permissions) for more details.
     fn permissions(&self) -> Box<dyn Permissions>;
+
+    /// Returns a reference to the underlying [`std::fs::Metadata`](https://doc.rust-lang.org/stable/std/fs/struct.Metadata.html) instance.
+    fn to_metadata(&self) -> &std::fs::Metadata;
 }
 
 // Permissions
@@ -142,6 +148,9 @@ pub trait Permissions: Send + Sync {
 
     /// See [`std::fs::Permissions::set_readonly`](https://doc.rust-lang.org/stable/std/fs/struct.Permissions.html#method.set_readonly) for more details.
     fn set_readonly(&mut self, readonly: bool);
+
+    /// Returns a reference to the underlying [`std::fs::Permissions`](https://doc.rust-lang.org/stable/std/fs/struct.Permissions.html) instance.
+    fn to_permissions(&self) -> &std::fs::Permissions;
 }
 
 // ReadDir
@@ -176,6 +185,10 @@ impl DirEntry for DefaultDirEntry {
 
     fn path(&self) -> PathBuf {
         self.0.path()
+    }
+
+    fn to_dir_entry(&self) -> &std::fs::DirEntry {
+        &self.0
     }
 }
 
@@ -324,6 +337,10 @@ impl Metadata for DefaultMetadata {
     fn permissions(&self) -> Box<dyn Permissions> {
         Box::new(DefaultPermissions(self.0.permissions()))
     }
+
+    fn to_metadata(&self) -> &std::fs::Metadata {
+        &self.0
+    }
 }
 
 // DefaultPermissions
@@ -362,6 +379,10 @@ impl Permissions for DefaultPermissions {
 
     fn set_readonly(&mut self, readonly: bool) {
         self.0.set_readonly(readonly)
+    }
+
+    fn to_permissions(&self) -> &std::fs::Permissions {
+        &self.0
     }
 }
 
@@ -427,6 +448,8 @@ mockall::mock! {
         fn metadata(&self) -> Result<Box<dyn Metadata>>;
 
         fn path(&self) -> PathBuf;
+
+        fn to_dir_entry(&self) -> &std::fs::DirEntry;
     }
 }
 
@@ -506,6 +529,8 @@ mockall::mock! {
         fn modified(&self) -> Result<SystemTime>;
 
         fn permissions(&self) -> Box<dyn Permissions>;
+
+        fn to_metadata(&self) -> &std::fs::Metadata;
     }
 }
 
@@ -530,5 +555,7 @@ mockall::mock! {
         fn set_mode(&mut self, mode: u32);
 
         fn set_readonly(&mut self, readonly: bool);
+
+        fn to_permissions(&self) -> &std::fs::Permissions;
     }
 }
