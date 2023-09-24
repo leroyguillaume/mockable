@@ -1,15 +1,19 @@
-name: Release
+name: Cache
 
-permissions:
-  contents: write
+concurrency:
+  cancel-in-progress: true
+  group: ${{ github.workflow }}-${{ github.ref_name }}
 
 on:
   push:
-    tags: ["*"]
+      branches: [main]
+      paths:
+      - "**.rs"
+      - Cargo.toml
 
 jobs:
-  release:
-    name: Release
+  cache:
+    name: Cache
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,15 +36,8 @@ jobs:
             target/
           key: ${{ runner.os }}-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('Cargo.toml') }}
 
-      - name: Publish
+      - name: Build (debug)
         uses: actions-rs/cargo@v1
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         with:
           args: --all-features
-          command: publish
-
-      - name: Create release
-        uses: softprops/action-gh-release@v1
-        with:
-          generate_release_notes: true
+          command: build
