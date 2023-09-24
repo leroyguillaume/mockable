@@ -36,6 +36,15 @@ jobs:
   quality:
     name: Quality
     runs-on: ubuntu-latest
+    services:
+      db:
+        image: postgres
+        env:
+          POSTGRES_DB: mockable
+          POSTGRES_PASSWORD: mockable
+          POSTGRES_USER: mockable
+        ports:
+          - 5432:5432
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -69,6 +78,11 @@ jobs:
         with:
           args: --all-features --tests -- -D warnings
           command: clippy
+
+      - name: Initialize database
+        env:
+          PGPASSWORD: mockable
+        run: psql -h 127.0.0.1 -U mockable -d mockable -f ./docker-compose/db/init.sql
 
       - name: Test
         uses: actions-rs/cargo@v1
