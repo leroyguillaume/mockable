@@ -11,15 +11,9 @@ on:
       - .github/workflows/quality.yml
       - "**.rs"
       - Cargo.toml
-  push:
-    branches: [main]
-    paths:
-      - "**.rs"
-      - Cargo.toml
 
 jobs:
   commit:
-    if: ${{ github.event_name == 'pull_request' }}
     name: Commit
     runs-on: ubuntu-latest
     steps:
@@ -46,8 +40,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - id: rust
-        name: Set up Rust
+      - name: Set up Rust
+        id: rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -64,42 +58,25 @@ jobs:
             target/
           key: ${{ runner.os }}-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('Cargo.toml') }}
 
-      - name: Build (debug)
-        uses: actions-rs/cargo@v1
-        with:
-          args: --all-features
-          command: build
-
-      - if: ${{ github.ref_name == 'main' }}
-        name: Build (release)
-        uses: actions-rs/cargo@v1
-        with:
-          args: --all-features --release
-          command: build
-
-      - if: ${{ github.event_name == 'pull_request' }}
-        name: Run fmt
+      - name: Check format
         uses: actions-rs/cargo@v1
         with:
           args: --check
           command: fmt
 
-      - if: ${{ github.event_name == 'pull_request' }}
-        name: Run clippy
+      - name: Lint
         uses: actions-rs/cargo@v1
         with:
           args: --all-features --tests -- -D warnings
           command: clippy
 
-      - if: ${{ github.event_name == 'pull_request' }}
-        name: Test
+      - name: Test
         uses: actions-rs/cargo@v1
         with:
           args: --all-features
           command: test
 
-      - if: ${{ github.event_name == 'pull_request' }}
-        name: Test examples
+      - name: Test examples
         uses: actions-rs/cargo@v1
         with:
           args: --all-features --examples
