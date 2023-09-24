@@ -16,6 +16,14 @@ pub use self::http::{
 pub use self::http::{MockHttpClient, MockHttpResponse};
 #[cfg(any(feature = "mock", test))]
 pub use self::mock::Mock;
+#[cfg(feature = "postgres")]
+pub use self::postgres::{
+    transactional, DefaultPostgresClient, DefaultPostgresPool, DefaultPostgresTransaction,
+    PostgresClient, PostgresError, PostgresPool, PostgresResult, PostgresTransaction,
+    ToPostgresClient,
+};
+#[cfg(all(feature = "postgres", feature = "mock"))]
+pub use self::postgres::{MockPostgresClient, MockPostgresPool, MockPostgresTransaction};
 #[cfg(all(feature = "uuid", feature = "mock"))]
 pub use self::uuid::MockUuidGenerator;
 #[cfg(feature = "uuid")]
@@ -47,6 +55,8 @@ mod fs;
 mod http;
 #[cfg(any(feature = "mock", test))]
 mod mock;
+#[cfg(feature = "postgres")]
+mod postgres;
 mod sys;
 #[cfg(feature = "uuid")]
 mod uuid;

@@ -1,0 +1,6 @@
+[env]
+DB_HOST = "localhost"
+DB_NAME = "mockable"
+DB_PASSWORD = "mockable"
+DB_PORT = "5432"
+DB_USER = "mockable"
