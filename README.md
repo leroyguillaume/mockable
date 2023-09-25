@@ -60,6 +60,14 @@ The [`Mock`](https://docs.rs/mockable/latest/mockable/struct.Mock.html) trait pr
 
 [Example](examples/mock.rs).
 
+## PostgreSQL Client
+
+The [`PostgresClient`](https://docs.rs/mockable/latest/mockable/trait.PostgresClient.html) trait provides a way to mock the interraction with a PostgreSQL database.
+
+**Note:** This trait is only available when the `postgres` feature is enabled.
+
+[Example](examples/postgres.rs).
+
 ## System
 
 The [`System`](https://docs.rs/mockable/latest/mockable/trait.System.html) trait provides a way to mock the system.
