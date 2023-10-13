@@ -13,20 +13,16 @@ categories = ["development-tools::testing"]
 browser = ["dep:open"]
 clock = ["dep:chrono"]
 cmd = ["dep:async-trait", "dep:tokio"]
-full = ["browser", "clock", "cmd", "http-client", "uuid"]
-http-client = ["dep:async-trait", "dep:bytes", "dep:reqwest"]
+full = ["browser", "clock", "cmd", "uuid"]
 mock = ["dep:mockall"]
-postgres = ["dep:async-trait", "dep:deadpool-postgres"]
 uuid = ["dep:uuid"]
 
 [dependencies]
 async-trait = { version = "0.1", optional = true }
 bytes = { version = "1.5", optional = true }
 chrono = { version = "0.4", optional = true }
-deadpool-postgres = { version = "0.10", optional = true }
 mockall = { version = "0.11", optional = true }
 open = { version = "5.0", optional = true }
-reqwest = { version = "0.11", optional = true }
 tokio = { version = "1.32", features = ["process"], optional = true}
 tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"], optional = true }

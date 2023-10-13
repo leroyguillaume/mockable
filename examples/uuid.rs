@@ -6,23 +6,14 @@ struct User {
     id: Uuid,
 }
 
-struct UserRegistry(Box<dyn UuidGenerator>);
-
-impl UserRegistry {
-    fn new() -> Self {
-        Self(Box::new(DefaultUuidGenerator))
-    }
-
-    fn create(&self) -> User {
-        User {
-            id: self.0.generate_v4(),
-        }
+fn create(gen: &dyn UuidGenerator) -> User {
+    User {
+        id: gen.generate_v4(),
     }
 }
 
 fn main() {
-    let registry = UserRegistry::new();
-    let user = registry.create();
+    let user = create(&DefaultUuidGenerator);
     println!("{user:?}");
 }
 
@@ -35,10 +26,9 @@ mod test {
     #[test]
     fn test() {
         let expected = Uuid::new_v4();
-        let mut generator = MockUuidGenerator::new();
-        generator.expect_generate_v4().returning(move || expected);
-        let registry = UserRegistry(Box::new(generator));
-        let user = registry.create();
+        let mut gen = MockUuidGenerator::new();
+        gen.expect_generate_v4().returning(move || expected);
+        let user = create(&gen);
         assert_eq!(user.id, expected);
     }
 }

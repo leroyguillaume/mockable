@@ -1,31 +1,22 @@
 use chrono::{DateTime, Utc};
 use mockable::{Clock, DefaultClock};
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 #[allow(dead_code)]
 struct User {
     creation: DateTime<Utc>,
     name: String,
 }
 
-struct UserRegistry(Box<dyn Clock>);
-
-impl UserRegistry {
-    fn new() -> Self {
-        Self(Box::new(DefaultClock))
-    }
-
-    fn create(&self, name: String) -> User {
-        User {
-            creation: self.0.utc(),
-            name,
-        }
+fn create_user(name: String, clock: &dyn Clock) -> User {
+    User {
+        creation: clock.utc(),
+        name,
     }
 }
 
 fn main() {
-    let registry = UserRegistry::new();
-    let user = registry.create("Alice".into());
+    let user = create_user("Alice".into(), &DefaultClock);
     println!("{user:?}");
 }
 
@@ -40,8 +31,11 @@ mod test {
         let creation = Utc::now();
         let mut clock = MockClock::new();
         clock.expect_utc().return_const(creation);
-        let registry = UserRegistry(Box::new(clock));
-        let user = registry.create("Alice".into());
-        assert_eq!(user.creation, creation);
+        let expected_user = User {
+            creation,
+            name: "Alice".into(),
+        };
+        let user = create_user(expected_user.name.clone(), &clock);
+        assert_eq!(user, expected_user);
     }
 }
