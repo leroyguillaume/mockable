@@ -1,21 +1,11 @@
 use mockable::{DefaultSystem, System};
 
-struct OAuth(Box<dyn System>);
-
-impl OAuth {
-    fn new() -> Self {
-        Self(Box::new(DefaultSystem))
-    }
-
-    fn authenticate(&self, redirect_uri: &str) {
-        let url = format!("https://example.com/auth?redirect_uri={redirect_uri}");
-        self.0.open_url(&url).expect("failed to open browser");
-    }
+fn open_browser(url: &str, sys: &dyn System) {
+    sys.open_url(url).expect("failed to open browser");
 }
 
 fn main() {
-    let oauth = OAuth::new();
-    oauth.authenticate("https://example.com/callback");
+    open_browser("https://google.com", &DefaultSystem)
 }
 
 #[cfg(test)]
@@ -27,11 +17,9 @@ mod test {
 
     #[test]
     fn test() {
-        let redirect_uri = "https://example.com/callback";
-        let url = format!("https://example.com/auth?redirect_uri={redirect_uri}");
-        let mut system = MockSystem::new();
-        system.expect_open_url().with(eq(url)).returning(|_| Ok(()));
-        let oauth = OAuth(Box::new(system));
-        oauth.authenticate(redirect_uri);
+        let url = "https://google.com";
+        let mut sys = MockSystem::new();
+        sys.expect_open_url().with(eq(url)).returning(|_| Ok(()));
+        open_browser(url, &sys)
     }
 }
