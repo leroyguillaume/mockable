@@ -8,10 +8,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mockable = { version = "0.3", features = [ ... ] }
+mockable = { version = "1.0", features = [ ... ] }
 
 [dev-dependencies]
-mockable = { version = "0.3", features = ["mock"] }
+mockable = { version = "1.0", features = ["mock"] }
 ```
 
 ## Documentation
@@ -40,33 +40,11 @@ The [`Env`](https://docs.rs/mockable/latest/mockable/trait.Env.html) trait provi
 
 [Example](examples/env.rs).
 
-## File System
-
-The [`FileSystem`](https://docs.rs/mockable/latest/mockable/trait.FileSystem.html) trait provides a way to mock the file system operations.
-
-[Example](examples/fs.rs).
-
-## HTTP Client
-
-The [`HttpClient`](https://docs.rs/mockable/latest/mockable/trait.HttpClient.html) trait provides a way to mock the HTTP client.
-
-**Note:** This trait is only available when the `http` feature is enabled.
-
-[Example](examples/http.rs).
-
 ## Mock
 
 The [`Mock`](https://docs.rs/mockable/latest/mockable/struct.Mock.html) trait provides a way to mock a function.
 
 [Example](examples/mock.rs).
-
-## PostgreSQL Client
-
-The [`PostgresClient`](https://docs.rs/mockable/latest/mockable/trait.PostgresClient.html) trait provides a way to mock the interraction with a PostgreSQL database.
-
-**Note:** This trait is only available when the `postgres` feature is enabled.
-
-[Example](examples/postgres.rs).
 
 ## System
 
