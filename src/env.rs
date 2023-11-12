@@ -1,59 +1,44 @@
 use std::{
+    char::ParseCharError,
     env::VarError,
     error::Error,
     ffi::OsString,
-    fmt::{Display, Formatter, Result as FmtResult},
-    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
+    net::{AddrParseError, IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6},
     num::{
         NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize, NonZeroU128,
-        NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
+        NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize, ParseFloatError,
+        ParseIntError,
     },
     path::PathBuf,
-    str::FromStr,
+    str::{FromStr, ParseBoolError},
 };
 
 use tracing::{trace, warn};
 
 // Macros
 
-macro_rules! implementation {
-    ($ty:ident) => {
-        implementation!($ty, $ty);
+macro_rules! parse_impl {
+    ($ty:ident, $err:ty) => {
+        parse_impl!($ty, $ty, $err);
     };
 
-    ($ident:ident, $ty:ident) => {
-        fn $ident(&self, key: &str) -> Option<EnvParseResult<$ty>> {
-            self.var(key)
+    ($ident:ident, $ty:ident, $err:ty) => {
+        fn $ident(&self, key: &str) -> Option<Result<$ty, $err>> {
+            self.parse(key)
         }
     };
 }
 
-// Types
+macro_rules! var_impl {
+    ($ty:ident) => {
+        var_impl!($ty, $ty);
+    };
 
-pub type EnvParseResult<T> = Result<T, EnvParseError>;
-
-// EnvParseError
-
-/// An error that can occur when parsing an environment variable.
-#[derive(Debug)]
-pub struct EnvParseError(Box<dyn Error + Send + Sync>);
-
-impl Display for EnvParseError {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "{}", self.0)
-    }
-}
-
-impl Error for EnvParseError {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        Some(self.0.as_ref())
-    }
-}
-
-impl From<Box<dyn Error + Send + Sync>> for EnvParseError {
-    fn from(err: Box<dyn Error + Send + Sync>) -> Self {
-        Self(err)
-    }
+    ($ident:ident, $ty:ident) => {
+        fn $ident(&self, key: &str) -> Option<$ty> {
+            self.var(key)
+        }
+    };
 }
 
 // Env
@@ -66,163 +51,163 @@ pub trait Env: Send + Sync {
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `bool`, an error is returned.
-    fn bool(&self, key: &str) -> Option<EnvParseResult<bool>>;
+    fn bool(&self, key: &str) -> Option<Result<bool, ParseBoolError>>;
 
     /// Returns the value of the environment variable `key` as a `char`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `char`, an error is returned.
-    fn char(&self, key: &str) -> Option<EnvParseResult<char>>;
+    fn char(&self, key: &str) -> Option<Result<char, ParseCharError>>;
 
     /// Returns the value of the environment variable `key` as a `f32`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `f32`, an error is returned.
-    fn f32(&self, key: &str) -> Option<EnvParseResult<f32>>;
+    fn f32(&self, key: &str) -> Option<Result<f32, ParseFloatError>>;
 
     /// Returns the value of the environment variable `key` as a `f64`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `f64`, an error is returned.
-    fn f64(&self, key: &str) -> Option<EnvParseResult<f64>>;
+    fn f64(&self, key: &str) -> Option<Result<f64, ParseFloatError>>;
 
     /// Returns the value of the environment variable `key` as a `i8`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `i8`, an error is returned.
-    fn i8(&self, key: &str) -> Option<EnvParseResult<i8>>;
+    fn i8(&self, key: &str) -> Option<Result<i8, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `i16`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `i16`, an error is returned.
-    fn i16(&self, key: &str) -> Option<EnvParseResult<i16>>;
+    fn i16(&self, key: &str) -> Option<Result<i16, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `i32`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `i32`, an error is returned.
-    fn i32(&self, key: &str) -> Option<EnvParseResult<i32>>;
+    fn i32(&self, key: &str) -> Option<Result<i32, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `i64`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `i64`, an error is returned.
-    fn i64(&self, key: &str) -> Option<EnvParseResult<i64>>;
+    fn i64(&self, key: &str) -> Option<Result<i64, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `i128`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `i128`, an error is returned.
-    fn i128(&self, key: &str) -> Option<EnvParseResult<i128>>;
+    fn i128(&self, key: &str) -> Option<Result<i128, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `IpAddr`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `IpAddr`, an error is returned.
-    fn ip_addr(&self, key: &str) -> Option<EnvParseResult<IpAddr>>;
+    fn ip_addr(&self, key: &str) -> Option<Result<IpAddr, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `Ipv4Addr`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `Ipv4Addr`, an error is returned.
-    fn ipv4_addr(&self, key: &str) -> Option<EnvParseResult<Ipv4Addr>>;
+    fn ipv4_addr(&self, key: &str) -> Option<Result<Ipv4Addr, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `Ipv6Addr`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `Ipv6Addr`, an error is returned.
-    fn ipv6_addr(&self, key: &str) -> Option<EnvParseResult<Ipv6Addr>>;
+    fn ipv6_addr(&self, key: &str) -> Option<Result<Ipv6Addr, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `isize`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `isize`, an error is returned.
-    fn isize(&self, key: &str) -> Option<EnvParseResult<isize>>;
+    fn isize(&self, key: &str) -> Option<Result<isize, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroI8`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroI8`, an error is returned.
-    fn non_zero_i8(&self, key: &str) -> Option<EnvParseResult<NonZeroI8>>;
+    fn non_zero_i8(&self, key: &str) -> Option<Result<NonZeroI8, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroI16`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroI16`, an error is returned.
-    fn non_zero_i16(&self, key: &str) -> Option<EnvParseResult<NonZeroI16>>;
+    fn non_zero_i16(&self, key: &str) -> Option<Result<NonZeroI16, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroI32`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroI32`, an error is returned.
-    fn non_zero_i32(&self, key: &str) -> Option<EnvParseResult<NonZeroI32>>;
+    fn non_zero_i32(&self, key: &str) -> Option<Result<NonZeroI32, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroI64`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroI64`, an error is returned.
-    fn non_zero_i64(&self, key: &str) -> Option<EnvParseResult<NonZeroI64>>;
+    fn non_zero_i64(&self, key: &str) -> Option<Result<NonZeroI64, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroI128`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroI128`, an error is returned.
-    fn non_zero_i128(&self, key: &str) -> Option<EnvParseResult<NonZeroI128>>;
+    fn non_zero_i128(&self, key: &str) -> Option<Result<NonZeroI128, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroIsize`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroIsize`, an error is returned.
-    fn non_zero_isize(&self, key: &str) -> Option<EnvParseResult<NonZeroIsize>>;
+    fn non_zero_isize(&self, key: &str) -> Option<Result<NonZeroIsize, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroU8`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroU8`, an error is returned.
-    fn non_zero_u8(&self, key: &str) -> Option<EnvParseResult<NonZeroU8>>;
+    fn non_zero_u8(&self, key: &str) -> Option<Result<NonZeroU8, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroU16`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroU16`, an error is returned.
-    fn non_zero_u16(&self, key: &str) -> Option<EnvParseResult<NonZeroU16>>;
+    fn non_zero_u16(&self, key: &str) -> Option<Result<NonZeroU16, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroU32`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroU32`, an error is returned.
-    fn non_zero_u32(&self, key: &str) -> Option<EnvParseResult<NonZeroU32>>;
+    fn non_zero_u32(&self, key: &str) -> Option<Result<NonZeroU32, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroU64`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroU64`, an error is returned.
-    fn non_zero_u64(&self, key: &str) -> Option<EnvParseResult<NonZeroU64>>;
+    fn non_zero_u64(&self, key: &str) -> Option<Result<NonZeroU64, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroU128`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroU128`, an error is returned.
-    fn non_zero_u128(&self, key: &str) -> Option<EnvParseResult<NonZeroU128>>;
+    fn non_zero_u128(&self, key: &str) -> Option<Result<NonZeroU128, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `NonZeroUsize`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `NonZeroUsize`, an error is returned.
-    fn non_zero_usize(&self, key: &str) -> Option<EnvParseResult<NonZeroUsize>>;
+    fn non_zero_usize(&self, key: &str) -> Option<Result<NonZeroUsize, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `OsString`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `OsString`, an error is returned.
-    fn os_string(&self, key: &str) -> Option<EnvParseResult<OsString>>;
+    fn os_string(&self, key: &str) -> Option<OsString>;
 
     /// Returns the value of the environment variable `key` as a `PathBuf`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `PathBuf`, an error is returned.
-    fn path_buf(&self, key: &str) -> Option<EnvParseResult<PathBuf>>;
+    fn path_buf(&self, key: &str) -> Option<PathBuf>;
 
     /// Returns the value of the environment variable `key` as a `String`.
     ///
@@ -234,19 +219,19 @@ pub trait Env: Send + Sync {
     ///
     /// If the environment variable is not present, `None` is returned.
     /// If the environment variable is not a valid `SocketAddr`, an error is returned.
-    fn socket_addr(&self, key: &str) -> Option<EnvParseResult<SocketAddr>>;
+    fn socket_addr(&self, key: &str) -> Option<Result<SocketAddr, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `SocketAddrV4`.
     ///
     /// If the environment variable is not present, `None` is returned.
     /// If the environment variable is not a valid `SocketAddrV4`, an error is returned.
-    fn socket_addr_v4(&self, key: &str) -> Option<EnvParseResult<SocketAddrV4>>;
+    fn socket_addr_v4(&self, key: &str) -> Option<Result<SocketAddrV4, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `SocketAddrV6`.
     ///
     /// If the environment variable is not present, `None` is returned.
     /// If the environment variable is not a valid `SocketAddrV6`, an error is returned.
-    fn socket_addr_v6(&self, key: &str) -> Option<EnvParseResult<SocketAddrV6>>;
+    fn socket_addr_v6(&self, key: &str) -> Option<Result<SocketAddrV6, AddrParseError>>;
 
     /// Returns the value of the environment variable `key` as a `String`.
     ///
@@ -263,37 +248,37 @@ pub trait Env: Send + Sync {
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `u8`, an error is returned.
-    fn u8(&self, key: &str) -> Option<EnvParseResult<u8>>;
+    fn u8(&self, key: &str) -> Option<Result<u8, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `u16`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `u16`, an error is returned.
-    fn u16(&self, key: &str) -> Option<EnvParseResult<u16>>;
+    fn u16(&self, key: &str) -> Option<Result<u16, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `u32`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `u32`, an error is returned.
-    fn u32(&self, key: &str) -> Option<EnvParseResult<u32>>;
+    fn u32(&self, key: &str) -> Option<Result<u32, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `u64`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `u64`, an error is returned.
-    fn u64(&self, key: &str) -> Option<EnvParseResult<u64>>;
+    fn u64(&self, key: &str) -> Option<Result<u64, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `u128`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is not a valid `u128`, an error is returned.
-    fn u128(&self, key: &str) -> Option<EnvParseResult<u128>>;
+    fn u128(&self, key: &str) -> Option<Result<u128, ParseIntError>>;
 
     /// Returns the value of the environment variable `key` as a `usize`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
     /// If the environment variable is a valid `usize`, an error is returned.
-    fn usize(&self, key: &str) -> Option<EnvParseResult<usize>>;
+    fn usize(&self, key: &str) -> Option<Result<usize, ParseIntError>>;
 }
 
 // DefaultEnv
@@ -305,12 +290,12 @@ pub struct DefaultEnv;
 
 impl DefaultEnv {
     #[inline]
-    fn var<E: Error + Send + Sync + 'static, T: FromStr<Err = E>>(
+    fn parse<E: Error + Send + Sync + 'static, T: FromStr<Err = E>>(
         &self,
         key: &str,
-    ) -> Option<EnvParseResult<T>> {
+    ) -> Option<Result<T, E>> {
         match self.raw(key) {
-            Ok(val) => Some(val.parse::<T>().map_err(|err| EnvParseError(Box::new(err)))),
+            Ok(val) => Some(val.parse::<T>()),
             Err(err) => match err {
                 VarError::NotPresent => {
                     trace!(key, "environment variable is not defined");
@@ -323,73 +308,78 @@ impl DefaultEnv {
             },
         }
     }
+
+    #[inline]
+    fn var<T: From<String>>(&self, key: &str) -> Option<T> {
+        self.string(key).map(|val| val.into())
+    }
 }
 
 impl Env for DefaultEnv {
-    implementation!(bool);
+    parse_impl!(bool, ParseBoolError);
 
-    implementation!(char);
+    parse_impl!(char, ParseCharError);
 
-    implementation!(f32);
+    parse_impl!(f32, ParseFloatError);
 
-    implementation!(f64);
+    parse_impl!(f64, ParseFloatError);
 
-    implementation!(i8);
+    parse_impl!(i8, ParseIntError);
 
-    implementation!(i16);
+    parse_impl!(i16, ParseIntError);
 
-    implementation!(i32);
+    parse_impl!(i32, ParseIntError);
 
-    implementation!(i64);
+    parse_impl!(i64, ParseIntError);
 
-    implementation!(i128);
+    parse_impl!(i128, ParseIntError);
 
-    implementation!(ip_addr, IpAddr);
+    parse_impl!(ip_addr, IpAddr, AddrParseError);
 
-    implementation!(ipv4_addr, Ipv4Addr);
+    parse_impl!(ipv4_addr, Ipv4Addr, AddrParseError);
 
-    implementation!(ipv6_addr, Ipv6Addr);
+    parse_impl!(ipv6_addr, Ipv6Addr, AddrParseError);
 
-    implementation!(isize);
+    parse_impl!(isize, ParseIntError);
 
-    implementation!(non_zero_i8, NonZeroI8);
+    parse_impl!(non_zero_i8, NonZeroI8, ParseIntError);
 
-    implementation!(non_zero_i16, NonZeroI16);
+    parse_impl!(non_zero_i16, NonZeroI16, ParseIntError);
 
-    implementation!(non_zero_i32, NonZeroI32);
+    parse_impl!(non_zero_i32, NonZeroI32, ParseIntError);
 
-    implementation!(non_zero_i64, NonZeroI64);
+    parse_impl!(non_zero_i64, NonZeroI64, ParseIntError);
 
-    implementation!(non_zero_i128, NonZeroI128);
+    parse_impl!(non_zero_i128, NonZeroI128, ParseIntError);
 
-    implementation!(non_zero_isize, NonZeroIsize);
+    parse_impl!(non_zero_isize, NonZeroIsize, ParseIntError);
 
-    implementation!(non_zero_u8, NonZeroU8);
+    parse_impl!(non_zero_u8, NonZeroU8, ParseIntError);
 
-    implementation!(non_zero_u16, NonZeroU16);
+    parse_impl!(non_zero_u16, NonZeroU16, ParseIntError);
 
-    implementation!(non_zero_u32, NonZeroU32);
+    parse_impl!(non_zero_u32, NonZeroU32, ParseIntError);
 
-    implementation!(non_zero_u64, NonZeroU64);
+    parse_impl!(non_zero_u64, NonZeroU64, ParseIntError);
 
-    implementation!(non_zero_u128, NonZeroU128);
+    parse_impl!(non_zero_u128, NonZeroU128, ParseIntError);
 
-    implementation!(non_zero_usize, NonZeroUsize);
+    parse_impl!(non_zero_usize, NonZeroUsize, ParseIntError);
 
-    implementation!(os_string, OsString);
+    var_impl!(os_string, OsString);
 
-    implementation!(path_buf, PathBuf);
+    var_impl!(path_buf, PathBuf);
 
     fn raw(&self, key: &str) -> Result<String, VarError> {
         trace!(key, "reading environment variable");
         std::env::var(key)
     }
 
-    implementation!(socket_addr, SocketAddr);
+    parse_impl!(socket_addr, SocketAddr, AddrParseError);
 
-    implementation!(socket_addr_v4, SocketAddrV4);
+    parse_impl!(socket_addr_v4, SocketAddrV4, AddrParseError);
 
-    implementation!(socket_addr_v6, SocketAddrV6);
+    parse_impl!(socket_addr_v6, SocketAddrV6, AddrParseError);
 
     fn string(&self, key: &str) -> Option<String> {
         self.raw(key).ok()
@@ -406,17 +396,17 @@ impl Env for DefaultEnv {
         })
     }
 
-    implementation!(u8);
+    parse_impl!(u8, ParseIntError);
 
-    implementation!(u16);
+    parse_impl!(u16, ParseIntError);
 
-    implementation!(u32);
+    parse_impl!(u32, ParseIntError);
 
-    implementation!(u64);
+    parse_impl!(u64, ParseIntError);
 
-    implementation!(u128);
+    parse_impl!(u128, ParseIntError);
 
-    implementation!(usize);
+    parse_impl!(usize, ParseIntError);
 }
 
 // MockEnv
@@ -431,82 +421,44 @@ mockall::mock! {
     pub Env {}
 
     impl Env for Env {
-        fn bool(&self, key: &str) -> Option<EnvParseResult<bool>>;
-
-        fn char(&self, key: &str) -> Option<EnvParseResult<char>>;
-
-        fn f32(&self, key: &str) -> Option<EnvParseResult<f32>>;
-
-        fn f64(&self, key: &str) -> Option<EnvParseResult<f64>>;
-
-        fn i8(&self, key: &str) -> Option<EnvParseResult<i8>>;
-
-        fn i16(&self, key: &str) -> Option<EnvParseResult<i16>>;
-
-        fn i32(&self, key: &str) -> Option<EnvParseResult<i32>>;
-
-        fn i64(&self, key: &str) -> Option<EnvParseResult<i64>>;
-
-        fn i128(&self, key: &str) -> Option<EnvParseResult<i128>>;
-
-        fn ip_addr(&self, key: &str) -> Option<EnvParseResult<IpAddr>>;
-
-        fn ipv4_addr(&self, key: &str) -> Option<EnvParseResult<Ipv4Addr>>;
-
-        fn ipv6_addr(&self, key: &str) -> Option<EnvParseResult<Ipv6Addr>>;
-
-        fn isize(&self, key: &str) -> Option<EnvParseResult<isize>>;
-
-        fn non_zero_i8(&self, key: &str) -> Option<EnvParseResult<NonZeroI8>>;
-
-        fn non_zero_i16(&self, key: &str) -> Option<EnvParseResult<NonZeroI16>>;
-
-        fn non_zero_i32(&self, key: &str) -> Option<EnvParseResult<NonZeroI32>>;
-
-        fn non_zero_i64(&self, key: &str) -> Option<EnvParseResult<NonZeroI64>>;
-
-        fn non_zero_i128(&self, key: &str) -> Option<EnvParseResult<NonZeroI128>>;
-
-        fn non_zero_isize(&self, key: &str) -> Option<EnvParseResult<NonZeroIsize>>;
-
-        fn non_zero_u8(&self, key: &str) -> Option<EnvParseResult<NonZeroU8>>;
-
-        fn non_zero_u16(&self, key: &str) -> Option<EnvParseResult<NonZeroU16>>;
-
-        fn non_zero_u32(&self, key: &str) -> Option<EnvParseResult<NonZeroU32>>;
-
-        fn non_zero_u64(&self, key: &str) -> Option<EnvParseResult<NonZeroU64>>;
-
-        fn non_zero_u128(&self, key: &str) -> Option<EnvParseResult<NonZeroU128>>;
-
-        fn non_zero_usize(&self, key: &str) -> Option<EnvParseResult<NonZeroUsize>>;
-
-        fn os_string(&self, key: &str) -> Option<EnvParseResult<OsString>>;
-
-        fn path_buf(&self, key: &str) -> Option<EnvParseResult<PathBuf>>;
-
+        fn bool(&self, key: &str) -> Option<Result<bool, ParseBoolError>>;
+        fn char(&self, key: &str) -> Option<Result<char, ParseCharError>>;
+        fn f32(&self, key: &str) -> Option<Result<f32, ParseFloatError>>;
+        fn f64(&self, key: &str) -> Option<Result<f64, ParseFloatError>>;
+        fn i8(&self, key: &str) -> Option<Result<i8, ParseIntError>>;
+        fn i16(&self, key: &str) -> Option<Result<i16, ParseIntError>>;
+        fn i32(&self, key: &str) -> Option<Result<i32, ParseIntError>>;
+        fn i64(&self, key: &str) -> Option<Result<i64, ParseIntError>>;
+        fn i128(&self, key: &str) -> Option<Result<i128, ParseIntError>>;
+        fn ip_addr(&self, key: &str) -> Option<Result<IpAddr, AddrParseError>>;
+        fn ipv4_addr(&self, key: &str) -> Option<Result<Ipv4Addr, AddrParseError>>;
+        fn ipv6_addr(&self, key: &str) -> Option<Result<Ipv6Addr, AddrParseError>>;
+        fn isize(&self, key: &str) -> Option<Result<isize, ParseIntError>>;
+        fn non_zero_i8(&self, key: &str) -> Option<Result<NonZeroI8, ParseIntError>>;
+        fn non_zero_i16(&self, key: &str) -> Option<Result<NonZeroI16, ParseIntError>>;
+        fn non_zero_i32(&self, key: &str) -> Option<Result<NonZeroI32, ParseIntError>>;
+        fn non_zero_i64(&self, key: &str) -> Option<Result<NonZeroI64, ParseIntError>>;
+        fn non_zero_i128(&self, key: &str) -> Option<Result<NonZeroI128, ParseIntError>>;
+        fn non_zero_isize(&self, key: &str) -> Option<Result<NonZeroIsize, ParseIntError>>;
+        fn non_zero_u8(&self, key: &str) -> Option<Result<NonZeroU8, ParseIntError>>;
+        fn non_zero_u16(&self, key: &str) -> Option<Result<NonZeroU16, ParseIntError>>;
+        fn non_zero_u32(&self, key: &str) -> Option<Result<NonZeroU32, ParseIntError>>;
+        fn non_zero_u64(&self, key: &str) -> Option<Result<NonZeroU64, ParseIntError>>;
+        fn non_zero_u128(&self, key: &str) -> Option<Result<NonZeroU128, ParseIntError>>;
+        fn non_zero_usize(&self, key: &str) -> Option<Result<NonZeroUsize, ParseIntError>>;
+        fn os_string(&self, key: &str) -> Option<OsString>;
+        fn path_buf(&self, key: &str) -> Option<PathBuf>;
         fn raw(&self, key: &str) -> Result<String, VarError>;
-
-        fn socket_addr(&self, key: &str) -> Option<EnvParseResult<SocketAddr>>;
-
-        fn socket_addr_v4(&self, key: &str) -> Option<EnvParseResult<SocketAddrV4>>;
-
-        fn socket_addr_v6(&self, key: &str) -> Option<EnvParseResult<SocketAddrV6>>;
-
+        fn socket_addr(&self, key: &str) -> Option<Result<SocketAddr, AddrParseError>>;
+        fn socket_addr_v4(&self, key: &str) -> Option<Result<SocketAddrV4, AddrParseError>>;
+        fn socket_addr_v6(&self, key: &str) -> Option<Result<SocketAddrV6, AddrParseError>>;
         fn string(&self, key: &str) -> Option<String>;
-
         fn strings(&self, key: &str, sep: &str) -> Option<Vec<String>>;
-
-        fn u8(&self, key: &str) -> Option<EnvParseResult<u8>>;
-
-        fn u16(&self, key: &str) -> Option<EnvParseResult<u16>>;
-
-        fn u32(&self, key: &str) -> Option<EnvParseResult<u32>>;
-
-        fn u64(&self, key: &str) -> Option<EnvParseResult<u64>>;
-
-        fn u128(&self, key: &str) -> Option<EnvParseResult<u128>>;
-
-        fn usize(&self, key: &str) -> Option<EnvParseResult<usize>>;
+        fn u8(&self, key: &str) -> Option<Result<u8, ParseIntError>>;
+        fn u16(&self, key: &str) -> Option<Result<u16, ParseIntError>>;
+        fn u32(&self, key: &str) -> Option<Result<u32, ParseIntError>>;
+        fn u64(&self, key: &str) -> Option<Result<u64, ParseIntError>>;
+        fn u128(&self, key: &str) -> Option<Result<u128, ParseIntError>>;
+        fn usize(&self, key: &str) -> Option<Result<usize, ParseIntError>>;
     }
 }

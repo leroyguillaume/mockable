@@ -1,13 +1,17 @@
-[package]
-name = "mockable"
-version = "1.0.0"
-authors = ["Guillaume Leroy <pro.guillaume.leroy@gmail.com>"]
-edition = "2021"
-description = "Usefull components to make easier to mock your code"
-documentation = "https://docs.rs/mockable"
-license-file = "LICENSE"
-keywords = ["mock", "mockable", "mocking", "test"]
-categories = ["development-tools::testing"]
+[dependencies]
+async-trait = {version = "0.1", optional = true}
+bytes = {version = "1.5", optional = true}
+chrono = {version = "0.4", optional = true}
+mockall = {version = "0.11", optional = true}
+open = {version = "5.0", optional = true}
+tokio = {version = "1.32", features = ["process"], optional = true}
+tracing = "0.1"
+uuid = {version = "0.8", features = ["v4"], optional = true}
+
+[dev-dependencies]
+mockall = "0.11"
+tokio = {version = "1.32", features = ["full"]}
+tokio-test = "0.4"
 
 [features]
 browser = ["dep:open"]
@@ -17,20 +21,16 @@ full = ["browser", "clock", "cmd", "uuid"]
 mock = ["dep:mockall"]
 uuid = ["dep:uuid"]
 
-[dependencies]
-async-trait = { version = "0.1", optional = true }
-bytes = { version = "1.5", optional = true }
-chrono = { version = "0.4", optional = true }
-mockall = { version = "0.11", optional = true }
-open = { version = "5.0", optional = true }
-tokio = { version = "1.32", features = ["process"], optional = true}
-tracing = "0.1"
-uuid = { version = "0.8", features = ["v4"], optional = true }
-
-[dev-dependencies]
-mockall = "0.11"
-tokio = { version = "1.32", features = ["full"] }
-tokio-test = "0.4"
+[package]
+authors = ["Guillaume Leroy <pro.guillaume.leroy@gmail.com>"]
+categories = ["development-tools::testing"]
+description = "Usefull components to make easier to mock your code"
+documentation = "https://docs.rs/mockable"
+edition = "2021"
+keywords = ["mock", "mockable", "mocking", "test"]
+license-file = "LICENSE"
+name = "mockable"
+version = "1.0.0"
 
 [package.metadata.docs.rs]
 all-features = true

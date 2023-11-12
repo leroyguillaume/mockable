@@ -1,4 +1,4 @@
-version: "3"
+version: '3'
 
 services:
   db:
@@ -8,6 +8,6 @@ services:
       POSTGRES_PASSWORD: mockable
       POSTGRES_USER: mockable
     ports:
-      - 5432:5432
+    - 5432:5432
     volumes:
-      - ./docker-compose/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    - ./docker-compose/db/init.sql:/docker-entrypoint-initdb.d/init.sql

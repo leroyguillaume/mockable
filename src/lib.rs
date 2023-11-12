@@ -17,7 +17,7 @@ pub use self::uuid::{DefaultUuidGenerator, UuidGenerator};
 #[cfg(feature = "mock")]
 pub use self::{env::MockEnv, sys::MockSystem};
 pub use self::{
-    env::{DefaultEnv, Env, EnvParseError, EnvParseResult},
+    env::{DefaultEnv, Env},
     sys::{DefaultSystem, System},
 };
 

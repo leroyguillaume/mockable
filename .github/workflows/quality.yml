@@ -8,30 +8,30 @@ on:
   pull_request:
     branches: [main]
     paths:
-      - .github/workflows/quality.yml
-      - "**.rs"
-      - Cargo.toml
+    - .github/workflows/quality.yml
+    - '**.rs'
+    - Cargo.toml
 
 jobs:
   commit:
     name: Commit
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18
 
-      - name: Install commitlint
-        run: npm install --global @commitlint/{cli,config-conventional}
+    - name: Install commitlint
+      run: npm install --global @commitlint/{cli,config-conventional}
 
-      - name: Lint
-        run: commitlint --from=HEAD~1
+    - name: Lint
+      run: commitlint --from=HEAD~1
 
   quality:
     name: Quality
@@ -44,54 +44,54 @@ jobs:
           POSTGRES_PASSWORD: mockable
           POSTGRES_USER: mockable
         ports:
-          - 5432:5432
+        - 5432:5432
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v3
 
-      - name: Set up Rust
-        id: rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          components: clippy,rustfmt
+    - name: Set up Rust
+      id: rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: clippy,rustfmt
 
-      - name: Restore cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('Cargo.toml') }}
+    - name: Restore cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-${{ steps.rust.outputs.rustc_hash }}-${{ hashFiles('Cargo.toml') }}
 
-      - name: Check format
-        uses: actions-rs/cargo@v1
-        with:
-          args: --check
-          command: fmt
+    - name: Check format
+      uses: actions-rs/cargo@v1
+      with:
+        args: --check
+        command: fmt
 
-      - name: Lint
-        uses: actions-rs/cargo@v1
-        with:
-          args: --all-features --tests -- -D warnings
-          command: clippy
+    - name: Lint
+      uses: actions-rs/cargo@v1
+      with:
+        args: --all-features --tests -- -D warnings
+        command: clippy
 
-      - name: Initialize database
-        env:
-          PGPASSWORD: mockable
-        run: psql -h 127.0.0.1 -U mockable -d mockable -f ./docker-compose/db/init.sql
+    - name: Initialize database
+      env:
+        PGPASSWORD: mockable
+      run: psql -h 127.0.0.1 -U mockable -d mockable -f ./docker-compose/db/init.sql
 
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          args: --all-features
-          command: test
+    - name: Test
+      uses: actions-rs/cargo@v1
+      with:
+        args: --all-features
+        command: test
 
-      - name: Test examples
-        uses: actions-rs/cargo@v1
-        with:
-          args: --all-features --examples
-          command: test
+    - name: Test examples
+      uses: actions-rs/cargo@v1
+      with:
+        args: --all-features --examples
+        command: test
