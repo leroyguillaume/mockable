@@ -61,6 +61,16 @@ impl<E> Mock<E> {
     pub fn count(&self) -> usize {
         self.idx.load(Ordering::Relaxed)
     }
+
+    /// Returns the number of times the mock is expected to be called.
+    ///
+    /// If the mock is expected to return always the same value, `usize::MAX` is returned.
+    pub fn times(&self) -> usize {
+        match &self.kind {
+            MockKind::Always(_) => usize::MAX,
+            MockKind::CallSpecific(fns) => fns.len(),
+        }
+    }
 }
 
 impl<E> Clone for Mock<E> {
