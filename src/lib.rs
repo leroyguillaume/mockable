@@ -8,6 +8,10 @@ pub use self::clock::{Clock, DefaultClock};
 pub use self::cmd::MockCommandRunner;
 #[cfg(feature = "cmd")]
 pub use self::cmd::{Command, CommandOutput, CommandRunner, DefaultCommandRunner};
+#[cfg(all(feature = "http", feature = "mock"))]
+pub use self::http::MockHttpServer;
+#[cfg(feature = "http")]
+pub use self::http::{DefaultHttpServer, HttpRequest, HttpServer};
 #[cfg(any(feature = "mock", test))]
 pub use self::mock::Mock;
 #[cfg(all(feature = "uuid", feature = "mock"))]
@@ -28,6 +32,8 @@ mod clock;
 #[cfg(feature = "cmd")]
 mod cmd;
 mod env;
+#[cfg(feature = "http")]
+mod http;
 #[cfg(any(feature = "mock", test))]
 mod mock;
 mod sys;
