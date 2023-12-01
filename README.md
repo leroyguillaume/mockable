@@ -40,6 +40,14 @@ The [`Env`](https://docs.rs/mockable/latest/mockable/trait.Env.html) trait provi
 
 [Example](examples/env.rs).
 
+## HTTP Server
+
+The [`HttpServer`](https://docs.rs/mockable/latest/mockable/trait.HttpServer.html) trait provides a way to mock a HTTP server.
+
+**Note:** This trait is only available when the `http` feature is enabled.
+
+[Example](examples/http.rs).
+
 ## Mock
 
 The [`Mock`](https://docs.rs/mockable/latest/mockable/struct.Mock.html) trait provides a way to mock a function.
