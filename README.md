@@ -8,10 +8,10 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-mockable = { version = "2.0", features = [ ... ] }
+mockable = { version = "2.3", features = [ ... ] }
 
 [dev-dependencies]
-mockable = { version = "2.0", features = ["mock"] }
+mockable = { version = "2.3", features = ["mock"] }
 ```
 
 ## Documentation
