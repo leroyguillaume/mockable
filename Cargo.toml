@@ -20,7 +20,7 @@ browser = ["dep:open"]
 clock = ["dep:chrono"]
 cmd = ["dep:async-trait", "dep:tokio"]
 full = ["browser", "clock", "cmd", "uuid"]
-http = ["dep:axum", "dep:tokio"]
+http = ["dep:async-trait", "dep:axum", "dep:tokio"]
 mock = ["dep:mockall"]
 uuid = ["dep:uuid"]
 
