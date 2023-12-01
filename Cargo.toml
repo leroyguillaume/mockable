@@ -33,7 +33,7 @@ edition = "2021"
 keywords = ["mock", "mockable", "mocking", "test"]
 license-file = "LICENSE"
 name = "mockable"
-version = "2.3.1"
+version = "2.3.2"
 
 [package.metadata.docs.rs]
 all-features = true
