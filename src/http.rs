@@ -33,7 +33,7 @@ pub struct HttpRequest {
 ///
 /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/http.rs).
 #[async_trait]
-pub trait HttpServer {
+pub trait HttpServer: Send + Sync {
     /// Returns the next request received by the server.
     ///
     /// `None` is returned if the server is stopped.
