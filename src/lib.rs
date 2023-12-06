@@ -11,7 +11,7 @@ pub use self::cmd::{Command, CommandOutput, CommandRunner, DefaultCommandRunner}
 #[cfg(all(feature = "http", feature = "mock"))]
 pub use self::http::MockHttpServer;
 #[cfg(feature = "http")]
-pub use self::http::{DefaultHttpServer, HttpRequest, HttpServer};
+pub use self::http::{DefaultHttpServer, HttpRequest, HttpResponse, HttpServer};
 #[cfg(any(feature = "mock", test))]
 pub use self::mock::Mock;
 #[cfg(all(feature = "uuid", feature = "mock"))]

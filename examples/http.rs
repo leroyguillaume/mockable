@@ -1,11 +1,12 @@
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
-use mockable::{DefaultHttpServer, HttpServer};
+use mockable::{DefaultHttpServer, HttpResponse, HttpServer};
 
 #[tokio::main]
 async fn main() {
+    let html = "<html><body><h1>Hello, world!</h1></body></html>";
     let addr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, 8000));
-    let mut server = DefaultHttpServer::start(&addr)
+    let mut server = DefaultHttpServer::with_response(&addr, HttpResponse::Html(html.into()))
         .await
         .expect("failed to start server");
     let req = server.next().await.expect("failed to get request");
