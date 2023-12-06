@@ -5,8 +5,10 @@ use axum::{
     body::Bytes,
     extract::Query,
     http::{HeaderMap, Method, StatusCode, Uri},
-    Router, Server,
+    response::{Html, IntoResponse},
+    Json, Router, Server,
 };
+use serde_json::Value;
 use tokio::{
     spawn,
     sync::{mpsc, oneshot},
@@ -16,6 +18,9 @@ use tracing::{error, warn};
 
 // HttpRequest
 
+/// HTTP request.
+///
+/// **This is supported on `feature=http` only.**
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct HttpRequest {
     pub body: Vec<u8>,
@@ -23,6 +28,19 @@ pub struct HttpRequest {
     pub method: String,
     pub path: String,
     pub query: HashMap<String, Vec<String>>,
+}
+
+// HttpResponse
+
+/// HTTP response.
+///
+/// **This is supported on `feature=http` only.**
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum HttpResponse {
+    Empty,
+    Html(String),
+    Json(Value),
+    Text(String),
 }
 
 // HttpServer
@@ -58,7 +76,16 @@ pub struct DefaultHttpServer {
 
 impl DefaultHttpServer {
     /// Starts a new server listening on the given address.
+    ///
+    /// The server will respond status code 200 with an empty response to all requests.
     pub async fn start(addr: &SocketAddr) -> io::Result<Self> {
+        Self::with_response(addr, HttpResponse::Empty).await
+    }
+
+    /// Starts a new server listening on the given address.
+    ///
+    /// The server will respond status code 200 with the given one to all requests.
+    pub async fn with_response(addr: &SocketAddr, resp: HttpResponse) -> io::Result<Self> {
         let (stop_tx, stop_rx) = oneshot::channel();
         let (req_tx, req_rx) = mpsc::channel(1);
         let app = Router::new().fallback(
@@ -99,7 +126,12 @@ impl DefaultHttpServer {
                     query,
                 };
                 req_tx.send(req).await.ok();
-                StatusCode::OK
+                match resp {
+                    HttpResponse::Empty => StatusCode::OK.into_response(),
+                    HttpResponse::Html(html) => (StatusCode::OK, Html(html)).into_response(),
+                    HttpResponse::Json(json) => (StatusCode::OK, Json(json)).into_response(),
+                    HttpResponse::Text(text) => (StatusCode::OK, text).into_response(),
+                }
             },
         );
         let server = Server::bind(addr)
@@ -161,17 +193,19 @@ mod test {
         time::Duration,
     };
 
-    use reqwest::Client;
+    use reqwest::{Client, Response};
     use tokio::time::sleep;
 
     use super::*;
 
+    // Mods
+
     mod default_http_server {
         use super::*;
 
-        #[tokio::test]
-        async fn test() {
-            let port = 8000;
+        // run
+
+        async fn run(port: u16, resp: HttpResponse) -> Response {
             let expected = HttpRequest {
                 body: "abc".to_string().into_bytes(),
                 headers: HashMap::from_iter([
@@ -184,7 +218,7 @@ mod test {
                 query: HashMap::from_iter([("foo".into(), vec!["bar1".into(), "bar2".into()])]),
             };
             let addr = SocketAddr::V4(SocketAddrV4::new(Ipv4Addr::LOCALHOST, port));
-            let mut server = DefaultHttpServer::start(&addr)
+            let mut server = DefaultHttpServer::with_response(&addr, resp)
                 .await
                 .expect("failed to start server");
             sleep(Duration::from_secs(1)).await;
@@ -215,6 +249,40 @@ mod test {
                 .send()
                 .await
                 .expect_err("request should fail after server is stopped");
+            resp
+        }
+
+        // Tests
+
+        #[tokio::test]
+        async fn empty() {
+            let resp = run(8000, HttpResponse::Empty).await;
+            let text = resp.text().await.expect("failed to read response body");
+            assert!(text.is_empty());
+        }
+
+        #[tokio::test]
+        async fn html() {
+            let expected = "<head></head>";
+            let resp = run(8001, HttpResponse::Html(expected.into())).await;
+            let text = resp.text().await.expect("failed to read response body");
+            assert_eq!(text, expected);
+        }
+
+        #[tokio::test]
+        async fn json() {
+            let expected = Value::String("val".into());
+            let resp = run(8002, HttpResponse::Json(expected.clone())).await;
+            let json: Value = resp.json().await.expect("failed to read response body");
+            assert_eq!(json, expected);
+        }
+
+        #[tokio::test]
+        async fn text() {
+            let expected = "val";
+            let resp = run(8003, HttpResponse::Text(expected.into())).await;
+            let text = resp.text().await.expect("failed to read response body");
+            assert_eq!(text, expected);
         }
     }
 }
