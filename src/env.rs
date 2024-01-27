@@ -1,5 +1,6 @@
 use std::{
     char::ParseCharError,
+    collections::HashMap,
     env::VarError,
     error::Error,
     ffi::OsString,
@@ -47,6 +48,11 @@ macro_rules! var_impl {
 ///
 /// [Example](https://github.com/leroyguillaume/mockable/tree/main/examples/env.rs).
 pub trait Env: Send + Sync {
+    /// Returns all environment variables.
+    ///
+    /// See [`std::env::vars`](https://doc.rust-lang.org/std/env/fn.vars.html) for more details.
+    fn all(&self) -> HashMap<String, String>;
+
     /// Returns the value of the environment variable `key` as a `bool`.
     ///
     /// If the environment variable is not present or it is not a valid unicode, `None` is returned.
@@ -316,6 +322,10 @@ impl DefaultEnv {
 }
 
 impl Env for DefaultEnv {
+    fn all(&self) -> HashMap<String, String> {
+        std::env::vars().collect()
+    }
+
     parse_impl!(bool, ParseBoolError);
 
     parse_impl!(char, ParseCharError);
@@ -421,6 +431,7 @@ mockall::mock! {
     pub Env {}
 
     impl Env for Env {
+        fn all(&self) -> HashMap<String, String>;
         fn bool(&self, key: &str) -> Option<Result<bool, ParseBoolError>>;
         fn char(&self, key: &str) -> Option<Result<char, ParseCharError>>;
         fn f32(&self, key: &str) -> Option<Result<f32, ParseFloatError>>;
