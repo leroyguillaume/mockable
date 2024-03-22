@@ -1,8 +1,8 @@
 use mockable::{Command, CommandRunner, DefaultCommandRunner};
 
 async fn echo(msg: &str, runner: &dyn CommandRunner) -> String {
-    let cmd = Command::new("echo".into()).with_arg(msg.into());
-    let output = runner.run(cmd).await.expect("echo failed");
+    let cmd = Command::new("echo").with_arg(msg);
+    let output = runner.run(&cmd).await.expect("echo failed");
     String::from_utf8(output.stdout).expect("echo output is not utf8")
 }
 
@@ -22,7 +22,7 @@ mod test {
     #[tokio::test]
     async fn test() {
         let expected = "Hello, world!";
-        let cmd = Command::new("echo".into()).with_arg(expected.into());
+        let cmd = Command::new("echo").with_arg(expected);
         let mut runner = MockCommandRunner::new();
         runner.expect_run().with(eq(cmd)).returning(|_| {
             Ok(CommandOutput {
