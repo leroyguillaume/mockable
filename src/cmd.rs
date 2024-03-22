@@ -1,8 +1,6 @@
 use std::{collections::HashMap, io::Result, path::PathBuf, process::Output};
 
 use async_trait::async_trait;
-use tracing::trace;
-
 // Command
 
 /// A command.
@@ -28,22 +26,22 @@ pub struct Command {
 
 impl Command {
     /// Creates a new command.
-    pub fn new(program: String) -> Self {
+    pub fn new<S: Into<String>>(program: S) -> Self {
         Self {
             args: vec![],
             cwd: None,
             env: None,
             #[cfg(unix)]
             gid: None,
-            program,
+            program: program.into(),
             #[cfg(unix)]
             uid: None,
         }
     }
 
     /// Add argument.
-    pub fn with_arg(mut self, arg: String) -> Self {
-        self.args.push(arg);
+    pub fn with_arg<S: Into<String>>(mut self, arg: S) -> Self {
+        self.args.push(arg.into());
         self
     }
 
@@ -54,19 +52,19 @@ impl Command {
     }
 
     /// Set current working directory.
-    pub fn with_cwd(mut self, cwd: PathBuf) -> Self {
-        self.cwd = Some(cwd);
+    pub fn with_cwd<P: Into<PathBuf>>(mut self, cwd: P) -> Self {
+        self.cwd = Some(cwd.into());
         self
     }
 
     /// Set environment variable.
-    pub fn with_env(mut self, key: String, val: String) -> Self {
+    pub fn with_env<S: Into<String>>(mut self, key: S, val: S) -> Self {
         match self.env {
             Some(ref mut env) => {
-                env.insert(key, val);
+                env.insert(key.into(), val.into());
             }
             None => {
-                self.env = Some(HashMap::from_iter([(key, val)]));
+                self.env = Some(HashMap::from_iter([(key.into(), val.into())]));
             }
         }
         self
@@ -128,7 +126,7 @@ impl From<Output> for CommandOutput {
 #[async_trait]
 pub trait CommandRunner: Send + Sync {
     /// Runs the given command.
-    async fn run(&self, cmd: Command) -> Result<CommandOutput>;
+    async fn run(&self, cmd: &Command) -> Result<CommandOutput>;
 }
 
 // DefaultCommandRunner
@@ -142,14 +140,13 @@ pub struct DefaultCommandRunner;
 
 #[async_trait]
 impl CommandRunner for DefaultCommandRunner {
-    async fn run(&self, cmd: Command) -> Result<CommandOutput> {
-        trace!(?cmd, "running command");
-        let mut builder = tokio::process::Command::new(cmd.program);
-        builder.args(cmd.args);
-        if let Some(cwd) = cmd.cwd {
+    async fn run(&self, cmd: &Command) -> Result<CommandOutput> {
+        let mut builder = tokio::process::Command::new(&cmd.program);
+        builder.args(&cmd.args);
+        if let Some(cwd) = &cmd.cwd {
             builder.current_dir(cwd);
         }
-        if let Some(env) = cmd.env {
+        if let Some(env) = &cmd.env {
             builder.envs(env);
         }
         if cfg!(unix) {
@@ -178,6 +175,6 @@ mockall::mock! {
 
     #[async_trait]
     impl CommandRunner for CommandRunner {
-        async fn run(&self, cmd: Command) -> Result<CommandOutput>;
+        async fn run(&self, cmd: &Command) -> Result<CommandOutput>;
     }
 }
